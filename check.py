@@ -55,6 +55,7 @@ def list_of_unique_dict(res: dict):
             tmp = []
             for key, val in r.items():
                 tmp.append((key, val))
-            li.append(tmp)
+            if tmp not in li:
+                li.append(tmp)
 
     return sorted(li)
