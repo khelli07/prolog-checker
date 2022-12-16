@@ -1,32 +1,31 @@
-import os
+import argparse
 
 from swiplserver import PrologMQI
 
-from check import check, recheck
+from check import check
 
-f = open("solutions/queries.txt")
-queries = [line.strip() for line in f if line.strip()]
-ans_filenames = [
-    fl for fl in os.listdir("answers") if fl.startswith("PP") and fl.endswith(".pl")
-]
+parser = argparse.ArgumentParser()
+parser.add_argument("-a", "--answer", default="")
+ans_fn = parser.parse_args().answer
 
-ans_fn = "PP01_13521041.pl"  # CHANGE THIS
+if not ans_fn:
+    raise Exception("File not specified")
 
 with PrologMQI() as mqi1:
     with PrologMQI() as mqi2:
         with mqi1.create_thread() as st:
             with mqi2.create_thread() as at:
-                correct, sol_fn = max(
-                    check(queries, st, at, ans_fn, "praprak_cc.pl"),
-                    check(queries, st, at, ans_fn, "praprak_sc.pl"),
+                _, _, sol_fn = max(
+                    check(st, at, ans_fn, "praprak_cc.pl"),
+                    check(st, at, ans_fn, "praprak_sc.pl"),
                     key=lambda x: x[0],
+                )
+
+                total_score, list_score, sol_fn = check(
+                    st, at, ans_fn, sol_fn, verbose=1
                 )
 
                 print("Done checking", ans_fn, end=", ")
                 print("Checked with", sol_fn)
-                print("=" * 10, "FALSE", "=" * 10)
-                recheck(queries, st, at, ans_fn, sol_fn)
                 print("=" * 50)
-                print(
-                    f"Total score: {correct/len(queries) * 100} ({correct}/{len(queries)})"
-                )
+                print(f"Total score: {total_score} ({list_score})")

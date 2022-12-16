@@ -4,8 +4,6 @@ from swiplserver import PrologMQI
 
 from check import check
 
-f = open("solutions/queries.txt")
-queries = [line.strip() for line in f if line.strip()]
 ans_filenames = [
     fl for fl in os.listdir("answers") if fl.startswith("PP") and fl.endswith(".pl")
 ]
@@ -17,18 +15,26 @@ with PrologMQI() as mqi1:
             with mqi2.create_thread() as at:
                 for ans_fn in ans_filenames:
                     print(f"Checking {ans_fn}..")
-                    correct, _ = max(
-                        check(queries, st, at, ans_fn, "praprak_cc.pl"),
-                        check(queries, st, at, ans_fn, "praprak_sc.pl"),
+                    _, _, sol_fn = max(
+                        check(st, at, ans_fn, "praprak_cc.pl", verbose=0),
+                        check(st, at, ans_fn, "praprak_sc.pl", verbose=0),
                         key=lambda x: x[0],
                     )
 
-                    res.append((ans_fn, correct))
+                    total_score, list_score, sol_fn = check(
+                        st, at, ans_fn, sol_fn, verbose=1
+                    )
+
+                    res.append((ans_fn, total_score, list_score))
+                    print(f"Total score: {total_score} ({list_score})")
+                    cont = input("Continue?(Y/N) ")
+                    if cont.lower() != "y":
+                        break
 
 os.system("clear")
 # Summary
 print("=" * 10, "Summary", "=" * 10)
 for r in res:
-    fn, correct = r
+    fn, total_score, list_score = r
     print(fn, end=", ")
-    print(f"Total score: {correct/len(queries) * 100} ({correct}/{len(queries)})")
+    print(f"Total score: {total_score} ({list_score})")
