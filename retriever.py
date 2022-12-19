@@ -16,16 +16,15 @@ r = requests.get(
 )
 
 answers = json.loads(r.text)["data"]
-urls = []
+count = 0
 
 for ans in answers:
     url = ans["attributes"]["files"][0]["file"]
     zipfile = requests.get(url)
     filename = url[-17:].split(".")[0]
-
-    open(f"zip/{filename}.zip", "wb").write(zipfile.content)
-
     try:
+        open(f"zip/{filename}.zip", "wb").write(zipfile.content)
+
         with ZipFile(f"zip/{filename}.zip") as zobj:
             try:
                 os.mkdir(f"zip/{filename}")
@@ -34,5 +33,10 @@ for ans in answers:
 
             zobj.extractall(path=f"zip/{filename}")
             shutil.copyfile(f"zip/{filename}/{filename}.pl", f"answers/{filename}.pl")
-    except Exception:
+    except Exception as e:
+        print(str(e))
         print(f"{filename} got error, please check manually.")
+
+    count += 1
+
+print(count)
