@@ -64,9 +64,20 @@ def check_helper(
             else:
                 correct += 1
         except Exception:
-            print(query)
-            print(st.query(query))
-            print(at.query(query))
+            if verbose:
+                print("Error occured")
+                print(query)
+                try:
+                    at.query(query)
+                except Exception as e:
+                    print(str(e))
+                    print("Answer got wrong")
+                try:
+                    st.query(query)
+                except Exception as e:
+                    print(str(e))
+                    print("Solution got wrong")
+                print("=" * 20)
 
     score = (correct / len(queries)) * weight
     return score

@@ -4,8 +4,10 @@ from swiplserver import PrologMQI
 
 from check import check
 
-ans_filenames = [
-    fl for fl in os.listdir("answers") if fl.startswith("PP") and fl.endswith(".pl")
+# 13521041 - 13521066
+tmp = sorted(os.listdir("answers"))
+ans_filenames = [fl for fl in tmp if fl.startswith("PP") and fl.endswith(".pl")][
+    29 : 29 + 26
 ]
 
 res = []
@@ -14,19 +16,22 @@ with PrologMQI() as mqi1:
         with mqi1.create_thread() as st:
             with mqi2.create_thread() as at:
                 for ans_fn in ans_filenames:
-                    print(f"Checking {ans_fn}..")
-                    _, _, sol_fn = max(
-                        check(st, at, ans_fn, "praprak_cc.pl", verbose=0),
-                        check(st, at, ans_fn, "praprak_sc.pl", verbose=0),
-                        key=lambda x: x[0],
-                    )
+                    f = open(f"answers/{ans_fn}")
+                    if "elonMusk" and "vanRossum" in f.read():
+                        checker = "praprak_cc.pl"
+                    else:
+                        checker = "praprak_sc.pl"
 
                     total_score, list_score, sol_fn = check(
-                        st, at, ans_fn, sol_fn, verbose=1
+                        st, at, ans_fn, checker, verbose=1
                     )
 
+                    print(f"Checking {ans_fn}")
+                    if "dynamic" in f.read():
+                        print("Did bonus, please check.")
                     res.append((ans_fn, total_score, list_score))
                     print(f"Total score: {total_score} ({list_score})")
+
                     cont = input("Continue?(Y/N) ")
                     if cont.lower() != "y":
                         break

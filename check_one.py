@@ -1,4 +1,5 @@
 import argparse
+import os
 
 from swiplserver import PrologMQI
 
@@ -15,15 +16,20 @@ with PrologMQI() as mqi1:
     with PrologMQI() as mqi2:
         with mqi1.create_thread() as st:
             with mqi2.create_thread() as at:
-                _, _, sol_fn = max(
-                    check(st, at, ans_fn, "praprak_cc.pl"),
-                    check(st, at, ans_fn, "praprak_sc.pl"),
-                    key=lambda x: x[0],
-                )
+                with open(f"answers/{ans_fn}") as f:
+                    if "elonMusk" and "vanRossum" in f.read():
+                        checker = "praprak_cc.pl"
+                    else:
+                        checker = "praprak_sc.pl"
 
                 total_score, list_score, sol_fn = check(
-                    st, at, ans_fn, sol_fn, verbose=1
+                    st, at, ans_fn, checker, verbose=1
                 )
+
+                print(f"Checking {ans_fn}")
+                with open(f"answers/{ans_fn}") as f:
+                    if "dynamic" in f.read():
+                        print("Did bonus, please check.")
 
                 print("Done checking", ans_fn, end=", ")
                 print("Checked with", sol_fn)
